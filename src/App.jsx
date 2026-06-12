@@ -1,7 +1,5 @@
 import './App.css'
 import './index.css'
-import Header from './components/Header'
-import ProductCard from './components/productCard'
 import HomePage from './pages/home'
 import LoginPage from './pages/login'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -32,3 +30,7 @@ function App() {
 }
 
 export default App
+
+
+
+

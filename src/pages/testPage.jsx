@@ -1,45 +1,24 @@
 import { useState } from "react"
+import mediaUpload from "../utils/mediaUpload"
 
 export default function TestPage(){
-    const [count, setCount] = useState(0)
-    const [status,setStatus]=useState("Passed")
-    //count=variable
-    //setCount=function to update the variable
+
+    const [image,setImage] = useState(null)
+
+    function fileUpload(){
+        mediaUpload(image).then((res)=>{
+            console.log(res)
+        }).catch((res)=>{
+            console.log(res)
+        })
+    }
+
     return(
         <div className="w-full h-screen  flex flex-col items-center justify-center">
-            <div className="w-[450px] h-[250px] shadow flex items-center justify-center">
-                <button onClick={()=>{
-                    setCount(count-1)
-                }} className="w-[100px] h-[40px] cursor-pointer text-[20px] font-bold text-white bg-blue-600 text-center">
-                    -
-                </button>
-                <span className="text-center text-[40px] font-bold w-[100px] h-[40px] mx-[10px] flex items-center justify-center">
-                    {count}
-                </span>
-                <button onClick={()=>{
-                    setCount(count+1)
-                }} className="w-[100px] h-[40px] cursor-pointer text-[20px] font-bold text-white bg-blue-600 text-center">
-                    +
-                </button>
-            </div>
-            <div className="w-[450px] h-[250px] shadow flex flex-col items-center justify-center">
-               
-                <span className="text-center text-[40px] font-bold w-[100px] h-[40px] mx-[10px] flex items-center justify-center">
-                    {status}
-                 </span>
-                 <div>
-                    <button className="w-[100px] h-[40px] cursor-pointer text-[20px] font-bold text-white bg-blue-600 text-center mx-[10px]" onClick={()=>{
-                        setStatus("Passed")
-                    }}>
-                        Pass
-                    </button>
-                    <button className="w-[100px] h-[40px] cursor-pointer text-[20px] font-bold text-white bg-blue-600 text-center mx-[10px]" onClick={()=>{
-                        setStatus("Failed")
-                    }}>
-                        Fail
-                    </button>
-                 </div>
-            </div>
+            <input type="file" className="file-input file-input-bordered w-full max-w-xs" onChange={(e)=>{
+                setImage(e.target.files[0])
+            }}/>
+            <button onClick={fileUpload} className="bg-green-500 text-white font-bold py-2 px-4 rounded" >Upload Image</button>
         </div>
     )
 }
