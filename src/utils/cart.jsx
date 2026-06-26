@@ -1,9 +1,11 @@
 export function GetCart(){
     let cart=localStorage.getItem("cart");
-    cart=JSON.parse(cart);
+    
     if(cart==null){
         cart=[]
         localStorage.setItem("cart",JSON.stringify(cart));
+    }else{
+        cart=JSON.parse(cart);
     }
     return cart
 }
@@ -45,3 +47,11 @@ export function addToCart(product,qty){
     localStorage.setItem("cart",JSON.stringify(cart));
 }
 
+export function getTotal(){
+    let cart=GetCart();
+    let total=0;
+    for(let i=0;i<cart.length;i++){
+        total += cart[i].price * cart[i].qty
+    }
+    return total
+}

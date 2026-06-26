@@ -47,7 +47,7 @@ async function handleLogin(){
           }}
           value={password} 
            type="password" className="w-[300px] h-[50px] border border-[#c3efe9] rounded-[20px] mb-[20px]" />
-          <button onClick={handleLogin} className="w-[300px] h-[50px] bg-[#c3efe9] text-white rounded-[20px] my-[20px] cursor-pointer">Login</button>
+          <button onClick={handleLogin} className="w-[300px] h-[50px] bg-accent text-white rounded-[20px] my-[20px] cursor-pointer">Login</button>
 
         </div>
       </div>

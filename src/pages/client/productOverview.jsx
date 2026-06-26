@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -11,6 +11,8 @@ export default function ProductOverview(){
     const productId=params.id
     const [status,setStatus]=useState("loading") //loading,success,error
     const [product,setProduct]=useState(null)
+    const navigate = useNavigate()
+
     useEffect(()=>{
         axios.get(import.meta.env.VITE_BACKEND_URL + "/api/products/"+productId).then((response)=>{
         console.log(response.data)
@@ -63,7 +65,20 @@ export default function ProductOverview(){
                                 console.log("new cart")
                                 console.log(GetCart())
                             }}>Add to Cart</button>
-                            <button className="w-[200px] h-[50px] mx-4 cursor-pointer bg-accent text-white rounded-2xl hover:bg-accent/80 transition-all duration-300">Buy Now</button>
+                            <button className="w-[200px] h-[50px] mx-4 cursor-pointer bg-accent text-white rounded-2xl hover:bg-accent/80 transition-all duration-300" onClick={()=>{
+                                navigate("/checkout",{
+                                    state:{
+                                        cart:[{
+                                            productId:product.productId,
+                                            name:product.name,
+                                            image:product.images[0],
+                                            price:product.price,
+                                            labeledPrice:product.labeledPrice,
+                                            qty:1
+                                        }]
+                                    }
+                                })
+                            }}>Buy Now</button>
                         </div>
                     </div>
                 </div>
