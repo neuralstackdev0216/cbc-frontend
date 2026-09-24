@@ -1,13 +1,33 @@
 import axios from "axios"
 import { useState } from "react"
 import toast from "react-hot-toast"
+import { GrGoogle } from "react-icons/gr"
 import { useNavigate } from "react-router-dom"
-
+import { useGoogleLogin } from "@react-oauth/google"
 export default function LoginPage() {
 
 const [email, setEmail] = useState("")
 const [password, setPassword] = useState("")
 const navigate=useNavigate()
+
+const googleLogin=useGoogleLogin({
+  onSuccess:(respone)=>{
+    const accessToken=respone.access_token
+    axios.post(import.meta.env.VITE_BACKEND_URL + "/api/users/login/google",{ 
+      accessToken 
+    }).then((response)=>{
+      toast.success("Login successful")
+      const token=response.data.token
+      localStorage.setItem("token", token)
+      if(response.data.role === "admin"){
+        navigate("/admin/")
+      }else{
+        navigate("/")
+      }
+
+    })
+  }
+})
 
 async function handleLogin(){
   try {
@@ -48,7 +68,10 @@ async function handleLogin(){
           value={password} 
            type="password" className="w-[300px] h-[50px] border border-[#c3efe9] rounded-[20px] mb-[20px]" />
           <button onClick={handleLogin} className="w-[300px] h-[50px] bg-accent text-white rounded-[20px] my-[20px] cursor-pointer">Login</button>
-
+          <button onClick={googleLogin} className="w-[300px] h-[50px] flex justify-center items-center bg-accent text-white rounded-[20px] my-[20px] cursor-pointer">
+            <GrGoogle className="text-xl text-gray-600 cursor-pointer hover:text-gray-800"/>
+            <span className="text-gray-600 font-semibold">Login with Google</span>
+          </button>
         </div>
       </div>
     </div>
