@@ -4,6 +4,7 @@ import ProductOverview from "./client/productOverview";
 import { Route, Routes } from "react-router-dom"; 
 import CartPage from "./client/cart";
 import CheckoutPage from "./client/checkout";
+import SearchProductPage from "./client/searchProducts.jsx";
 
 export default function HomePage() {
   
@@ -13,7 +14,8 @@ export default function HomePage() {
       <div className="w-full h-[calc(100%-80px)] flex justify-center items-center">
         <Routes>
           <Route path="/" element={<h1>Home Page</h1>} />
-          <Route path="/products" element={<ProductPage />} />      
+          <Route path="/products" element={<ProductPage />} /> 
+          <Route path="/search" element={<SearchProductPage />} />     
           <Route path="/about" element={<h1>About Page</h1>} />
           <Route path="/contact" element={<h1>Contact Page</h1>} />
           <Route path="/cart" element={<CartPage />} />
