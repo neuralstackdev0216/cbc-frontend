@@ -4,12 +4,13 @@ import { BiPlus } from "react-icons/bi";
 import { addToCart, GetCart, getTotal, removeFromCart } from "../../utils/cart";
 import { Link } from "react-router-dom";
 
+
 export default function CartPage(){
     const [cart,setCart]=useState(GetCart());
    
     return(
         <div className="w-full h-full flex flex-col items-center pt-4 relative">
-            <div className="z-50 hidden w-[300px] h-[100px] absolute shadow-2xl flex flex-col justify-center items-center bottom-1 md:top-1 right-1">
+            <div className="z-50 w-[300px] h-[100px] absolute shadow-2xl flex flex-col justify-center items-center bottom-1 md:top-1 right-1">
                 <p className="text-2xl text-secondary font-bold">
                     Total: 
                     <span className="text-md mx-1 font-bold text-accent">
@@ -29,7 +30,7 @@ export default function CartPage(){
                     return(
                         <div key={item.productId} className="w-[70%] md:w-[600px] md:h-[100px] rounded-tl-3xl rounded-bl-3xl mt-4 bg-primary shadow-2xl flex flex-col md:flex-row relative justify-center items-center p-2 md:p-0">
                             <img src={item.image} className="w-[100px] h-[100px] object-cover rounded-3xl" />
-                            <div className="w-[250px] h-full flex flex-col items-centermd:items-start justify-center pl-4">
+                            <div className="w-[250px] h-full flex flex-col items-center md:items-start justify-center pl-4">
                                 <h1 className="text-[10px] text-secondary font-semibold">{item.name}</h1>
                                 <h1 className="text-md text-gray-600 font-semibold">{item.productId}</h1>
                                 {

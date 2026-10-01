@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import mediaUpload from "../../utils/mediaUpload";
 import axios from "axios";
+import { categoryNames, brands, parseSpecs, specsToText } from "../../utils/productMeta";
 
 export default function EditProductPage(){
     
@@ -15,17 +16,17 @@ export default function EditProductPage(){
     const [labeledPrice, setLabeledPrice] = useState(location.state.labeledPrice);
     const [price, setPrice] = useState(location.state.price);
     const [stock, setStock] = useState(location.state.stock);
+    const [brand,setBrand]=useState("")
+    const [category,setCategory]=useState("categoryNames[0]")
+    const [specsText,setSpecsText]=useState(specsToText(location.state.specs))
     const navigate = useNavigate()
+
 
     async function updateProduct(){
         const token=localStorage.getItem("token")
         if(!token){
             toast.error("Please Login First")
             return
-        }
-        if(images.length<=0){
-            toast.error("Insert atleast one image")
-            return 
         }
         let imageUrls = location.state.images
         const promisesArray = []
@@ -51,7 +52,10 @@ export default function EditProductPage(){
                 images : imageUrls,
                 labeledPrice : labeledPrice,
                 price : price,
-                stock : stock
+                stock : stock,
+                brand : brand.trim() || "Other",
+                category : category,
+                specs : parseSpecs(specsText)
             }
             axios.put(import.meta.env.VITE_BACKEND_URL + "/api/products/"+productId,product,{
                 headers:{
@@ -69,12 +73,20 @@ export default function EditProductPage(){
     }
 
     return(
-        <div className="w-full h-screen flex flex-col items-center justify-center ">
+        <div className="w-full min-h-screen flex flex-col items-center justify-center gap-2 py-6">
             <h1 className="text-3xl font-bold mb-4">Edit Product</h1>
             <input disabled type="text" placeholder="Product ID" value={productId} onChange={(e) => setProductId(e.target.value)} className="input input-bordered w-full max-w-xs"/>
             <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="input input-bordered w-full max-w-xs"/>
             <input type="text" placeholder="Alt Names" value={altName} onChange={(e) => setAltName(e.target.value)} className="input input-bordered w-full max-w-xs"/>
             <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="input input-bordered w-full max-w-xs"/>
+                        <input list="brandList" type="text" placeholder="Brand (e.g. Samsung)" value={brand} onChange={(e) => setBrand(e.target.value)} className="input input-bordered w-full max-w-xs"/>
+            <datalist id="brandList">
+                {brands.map((b) => <option key={b} value={b} />)}
+            </datalist>
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="input input-bordered w-full max-w-xs">
+                {categoryNames.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <textarea rows={5} placeholder={"Specs, one per line:\nRAM: 8GB\nStorage: 256GB\nBattery: 5000mAh"} value={specsText} onChange={(e) => setSpecsText(e.target.value)} className="input input-bordered w-full max-w-xs h-auto"/>
             <input type="file" multiple placeholder="Images" onChange={(e) => setImages(e.target.files)} className="input input-bordered w-full max-w-xs"/>
             <input type="number" placeholder="Labeled Price" value={labeledPrice} onChange={(e) => setLabeledPrice(Number(e.target.value))} className="input input-bordered w-full max-w-xs"/>
             <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="input input-bordered w-full max-w-xs"/>

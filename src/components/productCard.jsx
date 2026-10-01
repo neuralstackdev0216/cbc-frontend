@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-
-
+import { addToCart} from "../utils/cart.jsx"
+import { toast } from "react-hot-toast"
+ 
 export default function ProductCard({ product }) {
     return (
-        <Link to={"/overview/"+product.productId} className="w-[300px] bg-white rounded- shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <Link to={"/overview/"+product.productId} className="w-[300px] bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
 
             {/* Product Image */}
             <div className="h-[220px] w-full bg-gray-100">
@@ -53,8 +54,15 @@ export default function ProductCard({ product }) {
                     )}
                 </div>
 
-                {/* Button */}
+                
                 <button
+                    type="button"
+                    onClick={(e)=>{
+                        e.preventDefault()
+                        e.stopPropagation()
+                        addToCart(product,1)
+                        toast.success("Added to cart")
+                    }}
                     disabled={!product.isAvailable || product.stock <= 0}
                     className={`mt-3 w-full py-2 rounded-lg font-medium transition
                     ${

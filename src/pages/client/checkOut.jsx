@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BiMinus, BiTrash, BiPlus } from "react-icons/bi";
-import { Link, useLocation } from "react-router-dom";
+import {  useLocation,useNavigate } from "react-router-dom";
 import { GetCart } from "../../utils/cart";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -8,6 +8,7 @@ import axios from "axios";
 
 export default function CheckoutPage(){
     const location = useLocation()
+    const navigate=useNavigate()
     const [cart,setCart]=useState(location.state?.cart || []);
     const [phoneNumber,setPhoneNumber]=useState("")
     const [address,setAddress]=useState("")
@@ -62,11 +63,13 @@ export default function CheckoutPage(){
             } 
         })
         toast.success("Order Placed Successfully")
+        localStorage.removeItem("cart")
+        navigate("/")
 
         }
         catch(err){
             console.log(err)
-            toast.error("Error Placing Order")
+            toast.error(err.response?.data?.message || "Error Placing Order")
             return 
         }
     }
@@ -75,14 +78,14 @@ export default function CheckoutPage(){
    
     return(
         <div className="w-full h-full flex flex-col items-center gap-4 relative">
-            <div className="w-[300px] absolute shadow-2xl flex flex-col justify-center items-center top-1 right-1 px-1 gap-10">
+            <div className="w-full md:w-[300px] md:absolute md:z-10 bg-white shadow-2xl flex flex-col justify-center items-center md:top-1 md:right-1 px-1 py-4 gap-4">
                 <p className="text-2xl text-secondary font-bold">
                     Total: 
                     <span className="text-md mx-1 font-bold text-accent">
                         {getTotal().toFixed(2)}
                     </span>
                 </p>
-                <div>
+                <div className="flex flex-col gap-2 items-center">
                     <input
                     type="text"
                     placeholder="Phone Number"
@@ -106,10 +109,10 @@ export default function CheckoutPage(){
             {
                 cart.map((item,index)=>{
                     return(
-                        <div key={item.productId} className="w-[600px] h-[100px] rounded-tl-3xl rounded-bl-3xl mt-4 bg-primary shadow-2xl flex flex-row relative justify-center items-center">
+                        <div key={item.productId} className="w-full md:w-[600px] h-[100px] rounded-tl-3xl rounded-bl-3xl mt-4 bg-primary shadow-2xl flex flex-row relative justify-center items-center">
                             <img src={item.image} className="w-[100px] h-[100px] object-cover rounded-3xl" />
-                            <div className="w-[250px] h-full flex flex-col items-start justify-center pl-4">
-                                <h1 className="text-[10px] text-secondary font-semibold">{item.name}</h1>
+                            <div className="w-[120px] md:w-[250px] h-full flex flex-col items-start justify-center pl-4">
+                                <h1 className="text-sm text-secondary font-semibold">{item.name}</h1>
                                 <h1 className="text-md text-gray-600 font-semibold">{item.productId}</h1>
                                 {
                                     item.labeledPrice > item.price ?
@@ -133,10 +136,10 @@ export default function CheckoutPage(){
                                 }}><BiPlus /></button>
                             </div>
                            
-                            <div className="w-[200px] h-full flex flex-col items-end justify-center pr-4">
+                            <div className="hidden md:flex w-[200px] h-full flex-col items-end justify-center pr-4">
                                 <span className="text-2xl font-semibold text-secondary ">Rs. {(item.price*item.qty).toFixed(2)}</span>
                             </div>
-                            <button className="absolute text-red-600 bg-white hover:text-white hover:bg-red-600 rounded-full p-2 right-[-35px]" onClick={()=>{
+                            <button className="absolute text-red-600 bg-white hover:text-white hover:bg-red-600 rounded-full p-2 right-1 md:right-[-35px]" onClick={()=>{
                                 removeFromCart(index)
                             }}>
                                 <BiTrash/>

@@ -38,7 +38,7 @@ export default function AdminPage(){
                 window.location.href="/login"
             })
         }
-    })
+    },[])
 
     function getClass(name){
         if(path.includes(name)){

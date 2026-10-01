@@ -33,7 +33,7 @@ export default function ForgetPassword() {
     }
 
     return(
-        <div className="w-full h-screen flex justify-center items-center bg-[url('/login.png')] bg-cover bg-center overflow-hidden">
+        <div className="w-full h-screen flex justify-center items-center bg-[url('/login.jpg')] bg-cover bg-center overflow-hidden">
             {
                 otpSent ?
                 <div className="w-[400px] h-[500px] bg-white flex flex-col gap-4 items-center justify-center rounded-2xl shadow-2xl">

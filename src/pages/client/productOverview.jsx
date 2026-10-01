@@ -28,7 +28,7 @@ export default function ProductOverview(){
     return(
         <>
         {status=="success" &&
-            <div className="w-full h-full flex flex-col md:flex-row md:max-h-full md:overfloy-y-scroll pt-4">
+            <div className="w-full h-full flex flex-col md:flex-row md:max-h-full md:overflow-y-auto pt-4">
                 <h1 className="w-full md:hidden block my-8 text-center text-4xl text-secondary font-semibold">{product.name}
                             {
                                 product.altName.map((altName,index)=>{
@@ -41,8 +41,8 @@ export default function ProductOverview(){
                 <div className="w-full md:w-[50%] md:h-full flex justify-center">
                     <ImageSlider images={product.images} />
                 </div>
-                <div className="w-ful md:w-[50%] md:h-full flex flex-col justify-center">
-                    <div className="w-full md:w-[500px] md:h-[600px] flex flex-col items-center">
+                <div className="w-full md:w-[50%] md:h-full flex flex-col justify-center">
+                    <div className="w-full md:w-[500px] md:min-h-[600px] flex flex-col items-center">
                         <h1 className="w-full hidden md:block text-center text-4xl text-secondary font-semibold">{product.name}
                             {
                                 product.altName.map((altName,index)=>{
@@ -54,6 +54,21 @@ export default function ProductOverview(){
                         </h1>
                         <h1 className="w-full text-center my-2 text-md text-gray-600 font-semibold">{product.productId}</h1>
                         <p className="w-full text-center my-2 text-md text-gray-600 font-semibold">{product.description}</p>
+                        {product.brand && (
+                            <p className="w-full text-center text-sm text-gray-500">{product.brand} • {product.category}</p>
+                        )}
+                        {product.specs?.length>0 && (
+                            <table className="w-full my-3 text-sm border border-gray-200">
+                                <tbody>
+                                    {product.specs.map((s,i)=>(
+                                        <tr key={i} className="odd:bg-gray-50">
+                                            <td className="p-2 font-semibold text-secondary w-[40%]">{s.label}</td>
+                                            <td className="p-2 text-gray-700">{s.value}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                         {
                             product.labeledPrice > product.price ?
                             <div>
