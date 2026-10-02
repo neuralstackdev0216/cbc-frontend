@@ -8,6 +8,7 @@ import SearchProductPage from "./client/searchProducts.jsx";
 import HomeContent from "./client/homeContent.jsx";
 import AboutPage from "./client/aboutPage.jsx";
 import ContactPage from "./client/contactPage.jsx";
+import MyOrdersPage from "./client/myOrders.jsx";
 
 export default function HomePage() {
   
@@ -24,6 +25,7 @@ export default function HomePage() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/overview/:id" element={<ProductOverview />} />
+          <Route path="/my-orders" element={<MyOrdersPage />}/>
           <Route path="/*" element={<h1>404 not found</h1>} />
         </Routes>
       </div>

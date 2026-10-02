@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Loading from "../components/loading";
+import AdminUserPage from "./admin/adminuserPage";
 
 export default function AdminPage(){
     const location = useLocation()
@@ -62,7 +63,7 @@ export default function AdminPage(){
                     <Routes path="/">
                         <Route  path="products" element={<AdminProductsPage />} />
                         <Route  path="orders" element={<AdminOrdersPage />} />
-                        <Route  path="users" element={<h1>Users Page</h1>} />
+                        <Route  path="users" element={<AdminUserPage />} />
                         <Route  path="settings" element={<h1>Settings Page</h1>} /> 
                         <Route  path="add-product" element={<AddProductPage />} />  
                         <Route  path="edit-product" element={<EditProductPage/>} />  

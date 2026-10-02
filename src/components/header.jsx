@@ -22,6 +22,7 @@ export default function Header(){
                 <Link to="/about" className="text-[20px] font-bold mx-2">About</Link>
                 <Link to="/contact" className="text-[20px] font-bold mx-2">Contact</Link>
                 <Link to="/search" className="text-[20px] font-bold mx-2">Search</Link>
+                {token!=null && <Link to="/my-orders" className="text-[20px] font-bold mx-2">My Orders</Link>}
             </div>
 
             <div className="w-[160px] hidden md:flex justify-center items-center">
@@ -57,14 +58,27 @@ export default function Header(){
                                 
 
                             </div>
+                            
                             <div className="w-full  h-[calc(100%-80px)] flex flex-col items-center gap-2">
                                 <a href="/" className="text-[20px] font-bold mx-2">Home</a>
                                 <a href="/products" className="text-[20px] font-bold mx-2">Products</a>
+                                <a href="/search" className="text-[20px] font-bold mx-2">Search</a>
                                 <a href="/about" className="text-[20px] font-bold mx-2">About</a>
                                 <a href="/contact" className="text-[20px] font-bold mx-2">Contact</a>
+                                {token!=null && <a href="/my-orders" className="text-[20px] font-bold mx-2">My Orders</a>}
                                 <a href="/cart" className="text-[20px] font-bold mx-2">
                                     <BsCart3 />
                                 </a>
+                                {
+                                    token==null ?
+                                    <a href="/login" className="text-[20px] font-bold mx-2">Login</a>
+                                    :
+                                    <button className="text-[20px] font-bold mx-2" onClick={()=>{
+                                        localStorage.removeItem("token")
+                                        localStorage.removeItem("user")
+                                        window.location.href="/"
+                                    }}>Logout</button>
+                                }
                             </div>
                         </div>
                     </div>

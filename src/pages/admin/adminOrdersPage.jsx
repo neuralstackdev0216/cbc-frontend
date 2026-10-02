@@ -241,7 +241,7 @@ export default function AdminOrdersPage() {
                                                 toast.success("Status updated successfully");
 
                                             } catch (e) {
-                                                toast.error("Failed to update status");
+                                                toast.error(e.response?.data?.message || "Failed to update status");
                                                 console.log(e);
                                             }
                                         }}
@@ -297,8 +297,8 @@ export default function AdminOrdersPage() {
 
                                             <p>
                                                 <b>Name:</b>{" "}
-                                                {product.name ||
-                                                    product.productName ||
+                                                {product.productInfo?.name ||
+                                                    product.name ||
                                                     "Product"}
                                             </p>
 
@@ -307,10 +307,10 @@ export default function AdminOrdersPage() {
                                                 {product.quantity || 1}
                                             </p>
 
-                                            {product.price !== undefined && (
+                                            {(product.productInfo?.price ?? product.price) !== undefined && (
                                                 <p>
                                                     <b>Price:</b>{" "}
-                                                    Rs. {Number(product.price).toLocaleString()}
+                                                    Rs. {Number(product.productInfo?.price ?? product.price).toLocaleString()}
                                                 </p>
                                             )}
 

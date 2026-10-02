@@ -64,7 +64,7 @@ export default function CheckoutPage(){
         })
         toast.success("Order Placed Successfully")
         localStorage.removeItem("cart")
-        navigate("/")
+        navigate("/my-orders")
 
         }
         catch(err){
