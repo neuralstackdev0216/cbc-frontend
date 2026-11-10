@@ -10,10 +10,18 @@ export default function HomeContent(){
     const [isLoading,setIsLoading]=useState(true)
 
     useEffect(()=>{
-        axios.get(import.meta.env.VITE_BACKEND_URL + "/api/products")
-        .then((response)=>{
-            setFeatured(response.data.filter((p)=>p.stock>0).slice(0,8))
-            setIsLoading(false)
+        axios.get(import.meta.env.VITE_BACKEND_URL + "/api/products", {
+            params: {
+                page: 1,
+                limit: 8
+            }
+        })
+        .then((response) => {
+            setFeatured(
+                response.data.products.filter((p) => p.stock > 0)
+            );
+
+            setIsLoading(false);
         })
         .catch(()=>{
             setIsLoading(false)
