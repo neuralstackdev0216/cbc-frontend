@@ -4,10 +4,13 @@ import { Link } from "react-router-dom"
 import ProductCard from "../../components/productCard"
 import Loading from "../../components/loading"
 import { categories } from "../../utils/productMeta"
+import { useNavigate } from "react-router-dom";
 
 export default function HomeContent(){
     const [featured,setFeatured]=useState([])
     const [isLoading,setIsLoading]=useState(true)
+    const [search, setSearch] = useState("");
+    const navigate = useNavigate();
 
     useEffect(()=>{
         axios.get(import.meta.env.VITE_BACKEND_URL + "/api/products", {
@@ -28,6 +31,16 @@ export default function HomeContent(){
         })
     },[])
 
+    function handleSearch(e) {
+        e.preventDefault();
+
+        const keyword = search.trim();
+
+        if (!keyword) return;
+
+        navigate(`/products?search=${encodeURIComponent(keyword)}`);
+    }
+
     return(
         <div className="w-full min-h-full self-start flex flex-col items-center">
             {/* Hero */}
@@ -40,6 +53,26 @@ export default function HomeContent(){
                     Shop Now
                 </Link>
             </section>
+
+            <form
+                onSubmit={handleSearch}
+                className="w-full max-w-3xl mx-auto flex gap-2 my-6 px-4"
+            >
+                <input
+                    type="text"
+                    placeholder="Search phones, tablets, accessories..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="flex-1 min-w-0 border rounded-lg px-4 py-3"
+                />
+
+                <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                >
+                    Search
+                </button>
+            </form>
 
             {/* Categories */}
             <section className="w-full max-w-5xl p-6">
