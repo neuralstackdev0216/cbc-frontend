@@ -4,14 +4,17 @@ import { toast } from "react-hot-toast"
  
 export default function ProductCard({ product }) {
     return (
-        <Link to={"/overview/"+product.productId} className="w-[300px] bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <Link
+            to={"/overview/" + product.productId}
+            className="w-[300px] bg-surface text-secondary border border-slate-700 rounded-xl overflow-hidden shadow-lg hover:border-accent hover:-translate-y-1 transition-all duration-300"
+        >
 
             {/* Product Image */}
-            <div className="h-[220px] w-full bg-gray-100">
+            <div className="h-[220px] w-full bg-slate-100 p-3">
                 <img
                     src={product.images?.[0]}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                 />
             </div>
 
@@ -19,18 +22,18 @@ export default function ProductCard({ product }) {
             <div className="p-4 flex flex-col gap-2">
 
                 {/* Product Name */}
-                <h2 className="text-lg font-semibold text-gray-800 line-clamp-1">
+                <h2 className="text-lg font-semibold text-slate-100 line-clamp-1">
                     {product.name}
                 </h2>
 
                 {/* Description */}
-                <p className="text-sm text-gray-500 line-clamp-2">
+                <p className="text-sm text-slate-400 line-clamp-2">
                     {product.description}
                 </p>
 
                 {/* Price Section */}
                 <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xl font-bold text-green-600">
+                    <span className="text-xl font-bold text-accent">
                         Rs. {product.price.toLocaleString()}
                     </span>
 
@@ -64,11 +67,11 @@ export default function ProductCard({ product }) {
                         toast.success("Added to cart")
                     }}
                     disabled={!product.isAvailable || product.stock <= 0}
-                    className={`mt-3 w-full py-2 rounded-lg font-medium transition
+                    className={`mt-3 w-full py-3 rounded-lg font-semibold transition
                     ${
                         product.isAvailable && product.stock > 0
-                            ? "bg-black text-white hover:bg-gray-800"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            ? "bg-accent text-primary hover:bg-sky-300"
+                            : "bg-slate-700 text-muted cursor-not-allowed"
                     }`}
                 >
                     Add to Cart

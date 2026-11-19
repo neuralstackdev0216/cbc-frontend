@@ -10,7 +10,7 @@ export const categories=[
 
 export const categoryNames=categories.map((c)=>c.name)
 
-export const brands=["Apple","Samsung","Xiaomi","Huwawei","Oppo","Vivo","Realme","OnePlus","Google","Sony","Anker","Other"]
+export const brands=["Apple","Samsung","Xiaomi","Huwawei","Oppo","Vivo","Realme","OnePlus","Google","Sony","OnePlus","Other"]
 
 export function parseSpecs(text){
     return text
