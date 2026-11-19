@@ -1,9 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@theme{
-    --color-primary: #EEF5FF; 
-    --color-secondary: #44444E;
-    --color-accent: #176B87;
-    --font-main:"Roboto", sans-serif;
+@theme {
+    --color-primary: #0B132B;
+    --color-secondary: #E7EEF7;
+    --color-accent: #38BDF8;
+    --color-surface: #1E293B;
+    --color-muted: #94A3B8;
+
+    --font-main: "Roboto", sans-serif;
+}
+
+body {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    font-family: var(--font-main);
 }

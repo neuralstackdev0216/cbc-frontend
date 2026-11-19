@@ -11,24 +11,24 @@ import ContactPage from "./client/contactPage.jsx";
 import MyOrdersPage from "./client/myOrders.jsx";
 
 export default function HomePage() {
-  
   return (
-    <div className='w-full h-screen  flex flex-col items-center'>
+    <div className="w-full min-h-screen bg-primary">
       <Header />
-      <div className="w-full h-[calc(100%-80px)] flex justify-center items-center overflow-y-auto">
+
+      <main className="w-full">
         <Routes>
-          <Route path="/" element={<HomeContent/>} />
-          <Route path="/products" element={<ProductPage />} /> 
-          <Route path="/search" element={<SearchProductPage />} />     
-          <Route path="/about" element={<AboutPage/>} />
-          <Route path="/contact" element={<ContactPage/>} />
+          <Route path="/" element={<HomeContent />} />
+          <Route path="/products" element={<ProductPage />} />
+          <Route path="/search" element={<SearchProductPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/overview/:id" element={<ProductOverview />} />
-          <Route path="/my-orders" element={<MyOrdersPage />}/>
+          <Route path="/my-orders" element={<MyOrdersPage />} />
           <Route path="/*" element={<h1>404 not found</h1>} />
         </Routes>
-      </div>
+      </main>
     </div>
-  )
+  );
 }
