@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Loading from "../components/loading";
-import AdminUserPage from "./admin/adminuserPage";
+import AdminUserPage from "./admin/adminUserPage";
 
 export default function AdminPage(){
     const location = useLocation()
