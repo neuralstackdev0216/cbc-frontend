@@ -1,153 +1,388 @@
-import { useState } from "react";
-import { BiMinus, BiTrash, BiPlus } from "react-icons/bi";
-import {  useLocation,useNavigate } from "react-router-dom";
+
+import { useRef, useState } from "react";
+import { BiMinus, BiTrash, BiPlus, BiCart } from "react-icons/bi";
+import { useNavigate, Link } from "react-router-dom";
 import { GetCart } from "../../utils/cart";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 
+export default function CheckoutPage() {
+  const navigate = useNavigate();
 
-export default function CheckoutPage(){
-    const location = useLocation()
-    const navigate=useNavigate()
-    const [cart,setCart]=useState(location.state?.cart || []);
-    const [phoneNumber,setPhoneNumber]=useState("")
-    const [address,setAddress]=useState("")
+  const [cart, setCart] = useState(() => GetCart());
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    function getTotal(){
-        let total = 0
-        cart.forEach((item)=>{
-            total += item.price*item.qty
-        })
-        return total
+  const submittingRef = useRef(false);
+
+  // Calculate order total
+  const total = cart.reduce(
+    (sum, item) =>
+      sum + Number(item.price) * Number(item.qty),
+    0
+  );
+
+  const totalItems = cart.reduce(
+    (sum, item) => sum + Number(item.qty),
+    0
+  );
+
+  function formatPrice(value) {
+    return Number(value || 0).toLocaleString("en-LK", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  // Synchronize React state and localStorage
+  function updateCart(newCart) {
+    setCart(newCart);
+    localStorage.setItem("cart", JSON.stringify(newCart));
+  }
+
+  function removeFromCart(index) {
+    if (submittingRef.current) return;
+
+    const newCart = cart.filter((_, i) => i !== index);
+    updateCart(newCart);
+  }
+
+  function changeQuantity(index, change) {
+    if (submittingRef.current) return;
+
+    const item = cart[index];
+    if (!item) return;
+
+    const newQty = Number(item.qty) + change;
+
+    if (newQty <= 0) {
+      removeFromCart(index);
+      return;
     }
 
-    function removeFromCart(index){
-        const newCart=cart.filter((item,i)=> i!==index)
-        setCart(newCart)
+    const newCart = cart.map((product, i) =>
+      i === index ? { ...product, qty: newQty } : product
+    );
+
+    updateCart(newCart);
+  }
+
+  // Place order
+  async function placeOrder() {
+    if (submittingRef.current) return;
+
+    if (cart.length === 0) {
+      toast.error("Your cart is empty.");
+      return;
     }
 
-    function changeQuantity(index,qty){
-        const newQty=cart[index].qty+qty
-        if(newQty<=0){
-            removeFromCart(index)
-            return 
-        }else{
-            const newCart=[...cart]
-            newCart[index].qty=newQty
-            setCart(newCart)
-        }
+    const phoneRegex = /^07\d{8}$/;
+
+    if (!phoneRegex.test(phoneNumber.trim())) {
+      toast.error(
+        "Enter a valid 10-digit Sri Lankan mobile number"
+      );
+      return;
     }
 
-    async function placeOrder(){
-        const token=localStorage.getItem("token")
-        if(!token){
-            toast.error("Please Login First");
-            return
-        }
-        const orderInformation={
-            products:[],
-            phone:phoneNumber,
-            address:address
-        }
-        for(let i=0;i<cart.length;i++){
-            const item={
-                productId:cart[i].productId,
-                qty:cart[i].qty
-            }
-            orderInformation.products[i]=item
-        }
-        try{
-            const res=await axios.post(import.meta.env.VITE_BACKEND_URL+"/api/orders",orderInformation,{
-            headers:{
-                Authorization:"Bearer "+token
-            } 
-        })
-        toast.success("Order Placed Successfully")
-        localStorage.removeItem("cart")
-        navigate("/my-orders")
-
-        }
-        catch(err){
-            console.log(err)
-            toast.error(err.response?.data?.message || "Error Placing Order")
-            return 
-        }
+    if (address.trim().length < 10) {
+      toast.error("Please enter a complete delivery address");
+      return;
     }
 
-        
-   
-    return(
-        <div className="w-full h-full flex flex-col items-center gap-4 relative">
-            <div className="w-full md:w-[300px] md:absolute md:z-10 bg-white shadow-2xl flex flex-col justify-center items-center md:top-1 md:right-1 px-1 py-4 gap-4">
-                <p className="text-2xl text-secondary font-bold">
-                    Total: 
-                    <span className="text-md mx-1 font-bold text-accent">
-                        {getTotal().toFixed(2)}
-                    </span>
-                </p>
-                <div className="flex flex-col gap-2 items-center">
-                    <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="w-[250px] h-[30px] rounded-lg border-2 border-gray-300 px-2"
-                    value={phoneNumber}
-                    onChange={(e)=>setPhoneNumber(e.target.value)}
-                    />
-                    <input  
-                        type="text" 
-                        placeholder="Address"
-                        className="w-[250px] h-[30px] rounded-lg border-2 border-gray-300 px-2"
-                        value={address} 
-                        onChange={(e)=>setAddress(e.target.value)}
-                    />
-                </div>
-                  
-                <button className="mt-2 text-white bg-accent px-4 py-2 rounded-lg font-bold hover:bg-secondary transition-all duration-300" onClick={placeOrder}>
-                    Place Order
-                </button>
-            </div>
-            {
-                cart.map((item,index)=>{
-                    return(
-                        <div key={item.productId} className="w-full md:w-[600px] h-[100px] rounded-tl-3xl rounded-bl-3xl mt-4 bg-primary shadow-2xl flex flex-row relative justify-center items-center">
-                            <img src={item.image} className="w-[100px] h-[100px] object-cover rounded-3xl" />
-                            <div className="w-[120px] md:w-[250px] h-full flex flex-col items-start justify-center pl-4">
-                                <h1 className="text-sm text-secondary font-semibold">{item.name}</h1>
-                                <h1 className="text-md text-gray-600 font-semibold">{item.productId}</h1>
-                                {
-                                    item.labeledPrice > item.price ?
-                                    <div>
-                                        <span className="text-md mx-1 text-gray-500 line-through ">{item.labeledPrice.toFixed(2)}</span>
-                                        <span className="text-md mx-1 font-bold text-accent">{item.price.toFixed(2)}</span>
-                                    </div>
-                                    :
-                                    <div>
-                                        <span className="text-md mx-1 font-bold text-accent">{item.price.toFixed(2)}</span>
-                                    </div>
-                                }
-                            </div>
-                            <div className="w-[100px] h-full flex flex-row items-center justify-between">
-                                <button className="text-xl p-2 cusor-pointer rounded-xl hover:bg-secondary font-bold text-white bg-accent aspect-square" onClick={()=>{
-                                    changeQuantity(index,-1)
-                                }}><BiMinus /></button>
-                                <span className="text-xl font-semibold text-secondary h-full flex items-center">{item.qty}</span>
-                                <button className="text-xl p-2 cusor-pointer rounded-xl hover:bg-secondary font-bold text-white bg-accent aspect-square" onClick={()=>{
-                                    changeQuantity(index,1)
-                                }}><BiPlus /></button>
-                            </div>
-                           
-                            <div className="hidden md:flex w-[200px] h-full flex-col items-end justify-center pr-4">
-                                <span className="text-2xl font-semibold text-secondary ">Rs. {(item.price*item.qty).toFixed(2)}</span>
-                            </div>
-                            <button className="absolute text-red-600 bg-white hover:text-white hover:bg-red-600 rounded-full p-2 right-1 md:right-[-35px]" onClick={()=>{
-                                removeFromCart(index)
-                            }}>
-                                <BiTrash/>
-                            </button>
-                        </div>
-                    )
-                })
-            }
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("Please Login First");
+      return;
+    }
+
+    const orderInformation = {
+      products: cart.map((item) => ({
+        productId: item.productId,
+        qty: Number(item.qty),
+      })),
+      phone: phoneNumber.trim(),
+      address: address.trim(),
+    };
+
+    submittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      await axios.post(
+        import.meta.env.VITE_BACKEND_URL + "/api/orders",
+        orderInformation,
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
+
+      toast.success("Order Placed Successfully");
+
+      localStorage.removeItem("cart");
+      setCart([]);
+      navigate("/my-orders");
+    } catch (err) {
+      console.error("Order placement failed:", err);
+
+      toast.error(
+        err.response?.data?.message || "Error Placing Order"
+      );
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-primary px-4 py-8 md:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white">
+            Checkout
+          </h1>
+
+          <p className="text-slate-400 mt-2">
+            Review your products and enter your delivery details.
+          </p>
         </div>
-    )
+
+        {cart.length === 0 ? (
+          /* Empty Checkout */
+          <div className="bg-white rounded-2xl shadow-lg py-20 px-4 flex flex-col items-center text-center">
+            <BiCart className="text-7xl text-slate-300 mb-4" />
+
+            <h2 className="text-2xl font-bold text-slate-900">
+              Your cart is empty
+            </h2>
+
+            <p className="text-slate-500 mt-2 mb-6">
+              Add products before proceeding to checkout.
+            </p>
+
+            <Link
+              to="/products"
+              className="bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-secondary transition"
+            >
+              Browse Products
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* LEFT: Products */}
+            <div className="lg:col-span-2 space-y-4">
+              <h2 className="text-xl font-semibold text-white">
+                Your Products ({totalItems})
+              </h2>
+
+              {cart.map((item, index) => (
+                <div
+                  key={item.productId}
+                  className="bg-white rounded-xl shadow-md p-4 flex flex-col sm:flex-row gap-4"
+                >
+                  {/* Product Image */}
+                  <div className="w-full sm:w-28 h-40 sm:h-28 bg-slate-100 rounded-lg overflow-hidden shrink-0">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name || "Product"}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        No image
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Information */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-slate-900 break-words">
+                      {item.name}
+                    </h3>
+
+                    <p className="text-xs text-slate-500 mt-1">
+                      Product ID: {item.productId}
+                    </p>
+
+                    <div className="mt-3">
+                      {Number(item.labeledPrice) >
+                        Number(item.price) && (
+                        <span className="text-sm text-slate-400 line-through mr-2">
+                          Rs. {formatPrice(item.labeledPrice)}
+                        </span>
+                      )}
+
+                      <span className="text-lg font-bold text-accent">
+                        Rs. {formatPrice(item.price)}
+                      </span>
+                    </div>
+
+                    {/* Quantity Controls */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          disabled={isSubmitting}
+                          aria-label={`Decrease quantity of ${item.name}`}
+                          onClick={() => changeQuantity(index, -1)}
+                          className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 text-slate-900 hover:bg-slate-200 disabled:opacity-50"
+                        >
+                          <BiMinus />
+                        </button>
+
+                        <span className="text-slate-900 font-semibold min-w-6 text-center">
+                          {item.qty}
+                        </span>
+
+                        <button
+                          type="button"
+                          disabled={isSubmitting}
+                          aria-label={`Increase quantity of ${item.name}`}
+                          onClick={() => changeQuantity(index, 1)}
+                          className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 text-slate-900 hover:bg-slate-200 disabled:opacity-50"
+                        >
+                          <BiPlus />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={isSubmitting}
+                        onClick={() => removeFromCart(index)}
+                        className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium disabled:opacity-50"
+                      >
+                        <BiTrash className="text-lg" />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Item Subtotal */}
+                  <div className="sm:text-right sm:min-w-32 border-t sm:border-t-0 pt-3 sm:pt-0">
+                    <p className="text-xs text-slate-500">
+                      Subtotal
+                    </p>
+
+                    <p className="text-lg font-bold text-slate-900 mt-1">
+                      Rs. {formatPrice(
+                        Number(item.price) * Number(item.qty)
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              <Link
+                to="/cart"
+                className="inline-block text-sky-400 hover:text-sky-300 font-medium mt-3"
+              >
+                ← Back to Cart
+              </Link>
+            </div>
+
+            {/* RIGHT: Order Summary */}
+            <div className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-6">
+              <h2 className="text-xl font-bold text-slate-900 mb-5">
+                Order Summary
+              </h2>
+
+              <div className="flex justify-between text-slate-600 mb-3">
+                <span>Total Items</span>
+                <span>{totalItems}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-600 mb-4">
+                <span>Subtotal</span>
+                <span>Rs. {formatPrice(total)}</span>
+              </div>
+
+              <div className="border-t border-slate-200 pt-4 mb-6">
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-lg font-bold text-slate-900">
+                    Total
+                  </span>
+
+                  <span className="text-xl font-bold text-accent">
+                    Rs. {formatPrice(total)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Delivery Information */}
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                Delivery Information
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="checkout-phone"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Phone Number
+                  </label>
+
+                  <input
+                    id="checkout-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="07XXXXXXXX"
+                    autoComplete="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-400 disabled:opacity-50"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="checkout-address"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Delivery Address
+                  </label>
+
+                  <textarea
+                    id="checkout-address"
+                    rows={3}
+                    placeholder="Enter your complete delivery address"
+                    autoComplete="street-address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-3 text-slate-900 resize-none focus:outline-none focus:ring-2 focus:ring-sky-400 disabled:opacity-50"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Order */}
+              <button
+                type="button"
+                onClick={placeOrder}
+                disabled={cart.length === 0 || isSubmitting}
+                className="w-full mt-6 bg-accent text-white py-3 rounded-lg font-semibold hover:bg-secondary transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting
+                  ? "Placing Order..."
+                  : "Place Order"}
+              </button>
+
+              <p className="text-xs text-slate-500 mt-4 text-center">
+                Please verify your delivery details before
+                placing your order.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
