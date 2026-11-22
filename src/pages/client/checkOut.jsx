@@ -6,6 +6,64 @@ import { GetCart } from "../../utils/cart";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 
+const CHECKOUT_STORAGE_KEY = "novamobiles_checkout_attempt";
+
+function normalizeProducts(products) {
+  const quantities = new Map();
+
+  for (const product of products) {
+    const id = product.productId;
+    const quantity = Number(product.qty);
+    quantities.set(id, (quantities.get(id) || 0) + quantity);
+  }
+
+  return [...quantities.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([productId, quantity]) => ({
+      productId,
+      quantity
+    }));
+}
+
+function getCheckoutAttempt(orderInformation, customerId) {
+  const fingerprint = JSON.stringify({
+    customerId,
+    phone: orderInformation.phone,
+    address: orderInformation.address,
+    products: normalizeProducts(orderInformation.products)
+  });
+
+  const saved = sessionStorage.getItem(CHECKOUT_STORAGE_KEY);
+
+  if (saved) {
+    try {
+      const attempt = JSON.parse(saved);
+
+      if (attempt.fingerprint === fingerprint && attempt.key) {
+        return { key: attempt.key, conflict: false };
+      }
+
+      // Do not silently replace a key if a previous
+      // checkout's outcome is still unknown.
+      return { key: null, conflict: true };
+    } catch {
+      return { key: null, conflict: true };
+    }
+  }
+
+  const key = `checkout_${crypto.randomUUID().replaceAll("-", "")}`;
+
+  sessionStorage.setItem(
+    CHECKOUT_STORAGE_KEY,
+    JSON.stringify({
+      key,
+      fingerprint
+    })
+  );
+
+  return { key, conflict: false };
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
 
@@ -16,7 +74,6 @@ export default function CheckoutPage() {
 
   const submittingRef = useRef(false);
 
-  // Calculate order total
   const total = cart.reduce(
     (sum, item) =>
       sum + Number(item.price) * Number(item.qty),
@@ -31,11 +88,10 @@ export default function CheckoutPage() {
   function formatPrice(value) {
     return Number(value || 0).toLocaleString("en-LK", {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
   }
 
-  // Synchronize React state and localStorage
   function updateCart(newCart) {
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
@@ -68,7 +124,6 @@ export default function CheckoutPage() {
     updateCart(newCart);
   }
 
-  // Place order
   async function placeOrder() {
     if (submittingRef.current) return;
 
@@ -101,37 +156,92 @@ export default function CheckoutPage() {
     const orderInformation = {
       products: cart.map((item) => ({
         productId: item.productId,
-        qty: Number(item.qty),
+        qty: Number(item.qty)
       })),
       phone: phoneNumber.trim(),
-      address: address.trim(),
+      address: address.trim()
     };
+
+    // Decode the authenticated customer's identifier
+    // for local checkout-attempt separation.
+    let customerId;
+
+    try {
+      const payload = JSON.parse(
+        atob(
+          token.split(".")[1]
+            .replace(/-/g, "+")
+            .replace(/_/g, "/")
+        )
+      );
+
+      customerId = payload.email || payload.sub;
+
+      if (!customerId) {
+        toast.error("Please log in again.");
+        return;
+      }
+    } catch {
+      toast.error("Invalid login session. Please log in again.");
+      return;
+    }
+
+    const attempt = getCheckoutAttempt(
+      orderInformation,
+      customerId
+    );
+
+    if (attempt.conflict) {
+      toast.error(
+        "A previous checkout is unresolved. Check My Orders before changing this checkout."
+      );
+      return;
+    }
 
     submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
-      await axios.post(
+      const response = await axios.post(
         import.meta.env.VITE_BACKEND_URL + "/api/orders",
         orderInformation,
         {
           headers: {
             Authorization: "Bearer " + token,
-          },
+            "Idempotency-Key": attempt.key
+          }
         }
       );
 
-      toast.success("Order Placed Successfully");
+      if (response.status === 200 || response.status === 201) {
+        sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+        localStorage.removeItem("cart");
+        setCart([]);
 
-      localStorage.removeItem("cart");
-      setCart([]);
-      navigate("/my-orders");
+        toast.success(
+          response.status === 200
+            ? "Your existing order was confirmed"
+            : "Order Placed Successfully"
+        );
+
+        navigate("/my-orders");
+      }
     } catch (err) {
       console.error("Order placement failed:", err);
 
-      toast.error(
-        err.response?.data?.message || "Error Placing Order"
-      );
+      const status = err.response?.status;
+
+      if (!err.response || status === 409 || status >= 500) {
+        toast.error(
+          "Checkout status is uncertain. Retry the same checkout or check My Orders."
+        );
+      } else {
+        toast.error(
+          err.response?.data?.message || "Error Placing Order"
+        );
+      }
+
+      // Keep the same idempotency key for safe retries.
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
@@ -153,7 +263,6 @@ export default function CheckoutPage() {
         </div>
 
         {cart.length === 0 ? (
-          /* Empty Checkout */
           <div className="bg-white rounded-2xl shadow-lg py-20 px-4 flex flex-col items-center text-center">
             <BiCart className="text-7xl text-slate-300 mb-4" />
 
@@ -270,7 +379,8 @@ export default function CheckoutPage() {
                     </p>
 
                     <p className="text-lg font-bold text-slate-900 mt-1">
-                      Rs. {formatPrice(
+                      Rs.{" "}
+                      {formatPrice(
                         Number(item.price) * Number(item.qty)
                       )}
                     </p>
