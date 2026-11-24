@@ -9,6 +9,7 @@ import { Toaster } from 'react-hot-toast'
 import RegisterPage from './pages/register'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ForgetPassword from './pages/forgetPassword.jsx'
+import ScrollToSection from "./components/ScrollToSection";
 function App() {
   
 
@@ -17,6 +18,7 @@ function App() {
     <BrowserRouter>
       <div >
         <Toaster />
+        <ScrollToSection />
         <Routes>
           <Route path='/login' element={<LoginPage />} />
           <Route path='/forget' element={<ForgetPassword />} />

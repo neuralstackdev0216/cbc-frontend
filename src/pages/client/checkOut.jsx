@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { GetCart } from "../../utils/cart";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { clearCart } from "../../utils/cart";
 
 const CHECKOUT_STORAGE_KEY = "novamobiles_checkout_attempt";
 
@@ -215,7 +216,7 @@ export default function CheckoutPage() {
 
       if (response.status === 200 || response.status === 201) {
         sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
-        localStorage.removeItem("cart");
+        clearCart();
         setCart([]);
 
         toast.success(
