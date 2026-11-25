@@ -1,125 +1,195 @@
-import axios from "axios"
-import { useState } from "react"
-import toast from "react-hot-toast"
-import { useNavigate } from "react-router-dom"
+
+import axios from "axios";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+
+import {
+    FiUser,
+    FiUserPlus,
+    FiMail,
+    FiLock
+} from "react-icons/fi";
+
+import AuthLayout from "../components/auth/AuthLayout";
+import AuthInput from "../components/auth/AuthInput";
+import AuthButton from "../components/auth/AuthButton";
 
 export default function RegisterPage() {
 
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate()
+    const navigate = useNavigate();
 
-  async function handleRegister() {
+    async function handleRegister(event) {
 
-    try {
+        event.preventDefault();
 
-      const response = await axios.post(
-        import.meta.env.VITE_BACKEND_URL + "/api/users",
-        {
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          password: password
+        if (loading) return;
+
+        if (
+            !firstName.trim() ||
+            !lastName.trim() ||
+            !email.trim() ||
+            !password ||
+            !confirmPassword
+        ) {
+            toast.error("Please complete all fields");
+            return;
         }
-      )
 
-      console.log(response.data)
+        if (password.length < 8) {
+            toast.error("Password must contain at least 8 characters");
+            return;
+        }
 
-      toast.success("Registration Successful")
+        if (password !== confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
+        }
 
-      navigate("/login")
+        setLoading(true);
 
-    } catch (error) {
+        try {
 
-      toast.error(
-        error.response?.data?.message || "Registration Failed"
-      )
+            await axios.post(
+                import.meta.env.VITE_BACKEND_URL + "/api/users",
+                {
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    email: email.trim(),
+                    password: password
+                }
+            );
+
+            toast.success("Registration successful");
+
+            navigate("/login", { replace: true });
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ||
+                "Registration failed. Please try again."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
 
     }
 
-  }
+    return (
 
-  return (
-    <div className='w-full h-screen bg-[url("/login.jpg")] bg-center bg-cover flex justify-center items-center'>
+        <AuthLayout
+            title="Create Account"
+            subtitle="Join NovaMobiles and discover your next device"
+            icon={FiUserPlus}
+        >
 
-      <div className="w-[50%] h-full">
-
-      </div>
-
-      <div className="w-[50%] h-full flex items-center justify-center">
-
-        <div className="w-[500px] h-[650px] backdrop-blur-md rounded-[20px] shadow-xl flex flex-col items-center justify-center">
-
-          <h1 className="text-white text-[35px] font-bold mb-[20px]">
-            Register
-          </h1>
-
-          <input
-            type="text"
-            placeholder="First Name"
-            onChange={(e) => {
-              setFirstName(e.target.value)
-            }}
-            value={firstName}
-            className="w-[300px] h-[50px] border border-[#c3efe9] rounded-[20px] my-[10px] px-4 text-white outline-none"
-          />
-
-          <input
-            type="text"
-            placeholder="Last Name"
-            onChange={(e) => {
-              setLastName(e.target.value)
-            }}
-            value={lastName}
-            className="w-[300px] h-[50px] border border-[#c3efe9] rounded-[20px] my-[10px] px-4 text-white outline-none"
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            onChange={(e) => {
-              setEmail(e.target.value)
-            }}
-            value={email}
-            className="w-[300px] h-[50px] border border-[#c3efe9] rounded-[20px] my-[10px] px-4 text-white outline-none"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => {
-              setPassword(e.target.value)
-            }}
-            value={password}
-            className="w-[300px] h-[50px] border border-[#c3efe9] rounded-[20px] my-[10px] px-4 text-white outline-none"
-          />
-
-          <button
-            onClick={handleRegister}
-            className="w-[300px] h-[50px] bg-[#c3efe9] text-white rounded-[20px] my-[20px] cursor-pointer"
-          >
-            Register
-          </button>
-
-          <p className="text-white">
-            Already have an account?
-            <span
-              onClick={() => {
-                navigate("/login")
-              }}
-              className="ml-2 text-[#c3efe9] cursor-pointer"
+            <form
+                onSubmit={handleRegister}
+                className="flex flex-col gap-4"
             >
-              Login
-            </span>
-          </p>
 
-        </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-      </div>
+                    <AuthInput
+                        label="First name"
+                        icon={FiUser}
+                        placeholder="First name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        autoComplete="given-name"
+                        required
+                        disabled={loading}
+                    />
 
-    </div>
-  )
+                    <AuthInput
+                        label="Last name"
+                        icon={FiUser}
+                        placeholder="Last name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        autoComplete="family-name"
+                        required
+                        disabled={loading}
+                    />
+
+                </div>
+
+                <AuthInput
+                    label="Email address"
+                    icon={FiMail}
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                    disabled={loading}
+                />
+
+                <AuthInput
+                    label="Password"
+                    icon={FiLock}
+                    type="password"
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    minLength={8}
+                    required
+                    disabled={loading}
+                />
+
+                <p className="text-xs text-slate-400 -mt-2">
+                    Use at least 8 characters for your password.
+                </p>
+
+                <AuthInput
+                    label="Confirm password"
+                    icon={FiLock}
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                    disabled={loading}
+                />
+
+                <AuthButton
+                    loading={loading}
+                    loadingText="Creating account..."
+                >
+                    Create Account
+                </AuthButton>
+
+            </form>
+
+            <p className="mt-6 text-center text-sm text-slate-400">
+
+                Already have an account?
+
+                <Link
+                    to="/login"
+                    className="ml-2 text-sky-400 font-semibold hover:text-sky-300"
+                >
+                    Sign In
+                </Link>
+
+            </p>
+
+        </AuthLayout>
+
+    );
+
 }
